@@ -11,8 +11,7 @@ def greeting(hour_: int, minutes_: int) -> str:
     Функция приветствия
     """
     if not isinstance(hour_, int) or not isinstance(minutes_, int):
-        raise TypeError(
-            f"Ошибка: Часы и минуты должны быть целыми числами.")
+        raise TypeError("Ошибка: Часы и минуты должны быть целыми числами.")
 
     if not (0 <= hour_ <= 23):
         raise ValueError(f"Ошибка: недопустимое значение часов: {hour_}. Должно быть от 0 до 23.")
@@ -51,10 +50,41 @@ def read_excel(path: str | Path, datetime_to_timestamp: bool = True) -> pd.DataF
         return pd.DataFrame()
 
 
+def convert_excel_into_list(path: str | Path, datetime_to_timestamp: bool = True) -> list[dict]:
+    """
+    Функция чтения XLSX-файла
+    """
+    try:
+        operations_df = pd.read_excel(path)
+        if datetime_to_timestamp:
+            operations_df["Дата операции"] = pd.to_datetime(operations_df["Дата операции"], dayfirst=True)
+        operations_list = operations_df.to_dict(orient="records")
+        transactions = []
+        for operation in operations_list:
+            date_value = operation.get("Дата операции")
+            if isinstance(date_value, pd.Timestamp):
+                operation["Дата операции"] = date_value.strftime("%Y-%m-%d")
+            elif isinstance(date_value, str):
+                final_date = datetime.strptime(date_value, "%Y-%m-%d")
+                operation["Дата операции"] = final_date.strftime("%Y-%m-%d")
+            transactions.append(operation)
+        return transactions
+
+    except FileNotFoundError:
+        print(f"Ошибка: Файл {path} не найден.")
+        return []
+
+    except ValueError as e:
+        print(f"Ошибка при чтении Excel-файла: {e}")
+        return []
+
+
 if __name__ == "__main__":
     date_now = datetime.now().time()
     hour = date_now.hour
     minutes = date_now.minute
     print(greeting(hour, minutes))
-    operations = read_excel(PATH_TO_OPERATIONS)
-    print(operations)
+    # operations = read_excel(PATH_TO_OPERATIONS)
+    # print(operations)
+    trans_list = convert_excel_into_list(PATH_TO_OPERATIONS)
+    print(trans_list)

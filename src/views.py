@@ -26,7 +26,7 @@ def filter_transactions_date(df_transactions: pd.DataFrame, date: datetime) -> p
     end_date = datetime(year_, month_, day_, 23, 59, 59)
     df_range_date = df_transactions[
         (df_transactions["Дата операции"] >= start_date) & (df_transactions["Дата операции"] <= end_date)
-        ].reset_index(drop=True)
+    ].reset_index(drop=True)
     return df_range_date
 
 
@@ -130,8 +130,10 @@ def get_stock_prices(path: str | Path, date_obj: datetime) -> list[dict]:
         date_string = date_obj.strftime("%Y-%m-%d")
 
         for stock in user_settings["user_stocks"]:
-            url = f"https://financialmodelingprep.com/api/v3/historical-price-full/{stock}?" \
-                  f"from={date_string}&to={date_string}&apikey={API_KEY_FINANCIAL_MODELING}"
+            url = (
+                f"https://financialmodelingprep.com/api/v3/historical-price-full/{stock}?"
+                f"from={date_string}&to={date_string}&apikey={API_KEY_FINANCIAL_MODELING}"
+            )
             response = requests.get(url)
 
             if response.status_code == 200:

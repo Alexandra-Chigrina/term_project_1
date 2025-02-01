@@ -20,12 +20,13 @@ def filter_transactions_date(df_transactions: pd.DataFrame, date: datetime) -> p
     """
     Получение операций за период с начала указанного месяца по заданную дату
     """
+    df_transactions["Дата операции"] = pd.to_datetime(df_transactions["Дата операции"])
     year_, month_, day_ = date.year, date.month, date.day
     start_date = datetime(year_, month_, 1)
     end_date = datetime(year_, month_, day_, 23, 59, 59)
     df_range_date = df_transactions[
         (df_transactions["Дата операции"] >= start_date) & (df_transactions["Дата операции"] <= end_date)
-        ]
+        ].reset_index(drop=True)
     return df_range_date
 
 
@@ -56,7 +57,7 @@ def get_top_transactions(df_transactions: pd.DataFrame) -> list[dict]:
     """
 
     df_transactions = df_transactions[df_transactions["Статус"] == "OK"]
-    df_transactions["Сумма платежа"] = df_transactions["Сумма платежа"].abs()
+    df_transactions.loc[:, "Сумма платежа"] = df_transactions["Сумма платежа"].abs()
     top_transactions = df_transactions.sort_values(by="Сумма платежа", ascending=False).head(5)
 
     top_transactions["Дата операции"] = pd.to_datetime(top_transactions["Дата операции"]).dt.strftime("%d.%m.%Y")
@@ -137,7 +138,7 @@ def get_stock_prices(path: str | Path, date_obj: datetime) -> list[dict]:
                 stock_data = response.json()
                 historical_data = stock_data.get("historical", [])
 
-                if historical_data:
+                if historical_data and historical_data[0]["close"] is not None:
                     final_price = float(historical_data[0]["close"])
                     rub_stock_price = final_price * usd_to_rub_rate
 
@@ -183,4 +184,4 @@ def main_page_fnc(date: str, fmt: str = "%Y-%m-%d %H:%M:%S") -> str:
 
 if __name__ == "__main__":
     df_operations = read_excel(PATH_TO_OPERATIONS)
-    print(main_page_fnc("2020-02-11 23:45:55"))
+    print(main_page_fnc("2021-02-11 23:05:55"))

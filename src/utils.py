@@ -10,6 +10,16 @@ def greeting(hour_: int, minutes_: int) -> str:
     """
     Функция приветствия
     """
+    if not isinstance(hour_, int) or not isinstance(minutes_, int):
+        raise TypeError(
+            f"Ошибка: Часы и минуты должны быть целыми числами.")
+
+    if not (0 <= hour_ <= 23):
+        raise ValueError(f"Ошибка: недопустимое значение часов: {hour_}. Должно быть от 0 до 23.")
+
+    if not (0 <= minutes_ <= 59):
+        raise ValueError(f"Ошибка: недопустимое значение минут: {minutes_}. Должно быть от 0 до 59.")
+
     if time(hour=22) <= time(hour_, minutes_) <= time(hour=23, minute=59, second=59) or time(hour=0) <= time(
         hour_, minutes_
     ) < time(hour=6):
@@ -46,5 +56,5 @@ if __name__ == "__main__":
     hour = date_now.hour
     minutes = date_now.minute
     print(greeting(hour, minutes))
-    operations_df = read_excel(PATH_TO_OPERATIONS)
-    print(operations_df)
+    operations = read_excel(PATH_TO_OPERATIONS)
+    print(operations)

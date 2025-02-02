@@ -12,7 +12,7 @@ from src.views import (
     get_currency_rates,
     get_stock_prices,
     get_top_transactions,
-    main_page_fnc,
+    main_page_fnc
 )
 
 

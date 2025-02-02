@@ -89,9 +89,7 @@ def test_convert_excel_into_list_error(mock_read_excel):
 
 @patch("pandas.read_excel")
 def test_convert_excel_into_list_string_date(mock_read_excel):
-    mock_data = pd.DataFrame(
-        {"Дата операции": ["2021-12-31", "2019-04-20"], "Сумма платежа": [-160.89, 2100.00]}
-    )
+    mock_data = pd.DataFrame({"Дата операции": ["2021-12-31", "2019-04-20"], "Сумма платежа": [-160.89, 2100.00]})
     mock_read_excel.return_value = mock_data
     data_dict = convert_excel_into_list("test.xlsx", False)
     assert data_dict == [

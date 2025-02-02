@@ -1,8 +1,19 @@
+import logging
+import os
 from datetime import datetime
 from typing import Any
 
 from config import PATH_TO_OPERATIONS
 from src.utils import convert_excel_into_list
+
+logger = logging.getLogger("services")
+file_handler = logging.FileHandler(
+    os.path.join(os.path.dirname(__file__), "..", "logs", "services.log"), "w", encoding="utf-8"
+)
+file_formatter = logging.Formatter("{asctime} {filename} {levelname}: {message}", style="{")
+file_handler.setFormatter(file_formatter)
+logger.addHandler(file_handler)
+logger.setLevel(logging.DEBUG)
 
 
 def investment_bank(month: str, transactions: list[dict[str, Any]], limit: int) -> float:
@@ -11,6 +22,8 @@ def investment_bank(month: str, transactions: list[dict[str, Any]], limit: int) 
     разницу между тратами и суммой округления отправляет в Инвесткопилку.
     Возвращает сумму, которую удалось отложить в Инвесткопилку за заданный месяц
     """
+    logger.info(f"Вызов investment_bank: month={month}, limit={limit}, количество транзакций={len(transactions)}")
+
     money_box = []
     for transaction in transactions:
         if transaction.get("Статус") != "OK":
@@ -21,6 +34,7 @@ def investment_bank(month: str, transactions: list[dict[str, Any]], limit: int) 
             try:
                 amount = float(str(amount).replace(",", "."))
             except ValueError:
+                logger.warning(f"Пропущена транзакция с некорректной суммой: {transaction}")
                 continue
         if amount >= 0:
             continue
@@ -31,8 +45,10 @@ def investment_bank(month: str, transactions: list[dict[str, Any]], limit: int) 
                 operation_date = datetime.strptime(date_value, "%Y-%m-%d")
                 operation_month = operation_date.strftime("%Y-%m")
             except ValueError:
+                logger.warning(f"Пропущена транзакция с некорректной датой: {transaction}")
                 continue
         else:
+            logger.debug(f"Пропущена транзакция без даты: {transaction}")
             continue
 
         if month == operation_month:
@@ -42,6 +58,7 @@ def investment_bank(month: str, transactions: list[dict[str, Any]], limit: int) 
                 continue
             money_box.append(investment)
 
+    logger.info(f"Общая сумма, отправленная в Инвесткопилку за {month}: {round(sum(money_box), 2)}")
     return round(sum(money_box), 2) if money_box else 0.0
 
 

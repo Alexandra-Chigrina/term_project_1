@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 from datetime import datetime
 from pathlib import Path
@@ -14,6 +15,16 @@ load_dotenv()
 API_KEY_EXCHANGE_RATES = os.getenv("API_KEY_EXCHANGE_RATES")
 API_KEY_FINANCIAL_MODELING = os.getenv("API_KEY_FINANCIAL_MODELING")
 API_KEY_ALPHA_VANTAGE = os.getenv("API_KEY_ALPHA_VANTAGE")
+
+
+logger = logging.getLogger("views")
+file_handler = logging.FileHandler(
+    os.path.join(os.path.dirname(__file__), "..", "logs", "views.log"), "w", encoding="utf-8"
+)
+file_formatter = logging.Formatter("{asctime} {filename} {levelname}: {message}", style="{")
+file_handler.setFormatter(file_formatter)
+logger.addHandler(file_handler)
+logger.setLevel(logging.DEBUG)
 
 
 def filter_transactions_date(df_transactions: pd.DataFrame, date: datetime) -> pd.DataFrame:
@@ -162,12 +173,18 @@ def main_page_fnc(date: str, fmt: str = "%Y-%m-%d %H:%M:%S") -> str:
     """
     Принимает на вход строку с датой и временем и возвращает JSON-файл с определенными данными
     """
+    logger.info(f"Вызов main_page_fnc с параметрами: date={date}, fmt={fmt}")
+
     date_obj = datetime.strptime(date, fmt)
     request_hour, request_minutes = date_obj.hour, date_obj.minute
     greeting_message = greeting(request_hour, request_minutes)
 
+    logger.info(f"Дата успешно распознана: {date_obj}")
+
     operations_data = read_excel(PATH_TO_OPERATIONS)
     df_range_date = filter_transactions_date(operations_data, date_obj)
+
+    logger.info(f"Фильтрация операций завершена. Найдено {len(df_range_date)} записей.")
 
     cards_message = get_card_info(df_range_date)
     top_trans_message = get_top_transactions(df_range_date)
@@ -181,6 +198,8 @@ def main_page_fnc(date: str, fmt: str = "%Y-%m-%d %H:%M:%S") -> str:
         "currency_rates": currency_rate_message,
         "stock_prices": stock_prices_message,
     }
+    logger.info("Формирование JSON-ответа завершено успешно.")
+
     return json.dumps(user_info, ensure_ascii=False, indent=4)
 
 

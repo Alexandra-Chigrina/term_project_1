@@ -12,7 +12,7 @@ from src.views import (
     get_currency_rates,
     get_stock_prices,
     get_top_transactions,
-    main_page_fnc
+    main_page_fnc,
 )
 
 
@@ -263,8 +263,14 @@ def test_main_page_fnc(
     mock_get_currency_rates,
     mock_get_stock_prices,
 ):
-    mock_read_excel.return_value = Mock()
-    mock_filter_transactions.return_value = Mock()
+    test_df = pd.DataFrame({
+        "Дата операции": ["2021-02-10", "2021-02-11"],
+        "Сумма платежа": [-5000.0, -2000.0],
+        "Категория": ["Переводы", "Продукты"],
+    })
+
+    mock_read_excel.return_value = test_df
+    mock_filter_transactions.return_value = test_df
 
     date_string = "2021-02-11 08:30:00"
     expected_output = {
